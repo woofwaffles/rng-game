@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate RNG Color Roll Game</title>
+    <style>
+        /* Modernized UI and layout */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .roll-button {
+            padding: 15px 40px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 128, 0, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .roll-button:hover {
+            transform: scale(1.1);
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 50px;
+            font-weight: bold;
+            transition: all 0.5s ease;
+            opacity: 1; /* Ensure visibility */
+        }
+
+        .probability {
+            margin-top: 10px;
+            font-size: 24px;
+            color: #666;
+        }
+
+        /* Special effects for different rarities */
+        .common-effect {
+            color: #4CAF50;
+            animation: glow-pulse 1.5s infinite alternate;
+        }
+
+        .uncommon-effect {
+            color: #2196F3;
+            animation: flash 1.2s infinite;
+        }
+
+        .rare-effect {
+            color: #9C27B0;
+            animation: aura-spin 3s infinite linear;
+        }
+
+        .epic-effect {
+            color: #F44336;
+            animation: explosion 1s ease-in-out;
+        }
+
+        .legendary-effect {
+            color: #FFC107;
+            animation: glow-pulse 2s infinite alternate, spin 4s linear infinite;
+        }
+
+        /* New rarities */
+        .mythic-effect {
+            color: #00BCD4;
+            animation: glow-pulse 3s infinite alternate;
+        }
+
+        .celestial-effect {
+            color: #673AB7;
+            animation: spin 5s linear infinite, flash 2s infinite;
+        }
+
+        .divine-effect {
+            color: #E91E63;
+            animation: explosion 2s infinite, aura-spin 4s infinite;
+        }
+
+        /* Keyframes for animations */
+        @keyframes glow-pulse {
+            from { text-shadow: 0 0 20px rgba(255, 255, 255, 0); }
+            to { text-shadow: 0 0 50px rgba(255, 255, 255, 1); }
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes aura-spin {
+            from { transform: scale(1) rotate(0); }
+            to { transform: scale(1.2) rotate(360deg); }
+        }
+
+        @keyframes explosion {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.6; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Background color customization section */
+        .color-picker-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .color-picker-label {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* Image button at bottom left corner */
+        .image-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            cursor: pointer;
+        }
+
+        .image-button img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .image-button img:hover {
+            transform: scale(1.1);
+        }
+
+    </style>
+</head>
+<body id="body">
+
+    <div class="container">
+        <button class="roll-button" onclick="roll()">Roll</button>
+        <div class="result" id="result">?</div>
+        <div class="probability" id="probability"></div>
+    </div>
+
+    <div class="color-picker-container">
+        <label for="colorPicker" class="color-picker-label">Choose Background Color:</label>
+        <input type="color" id="colorPicker" value="#f5f5f5" onchange="changeBackgroundColor()">
+    </div>
+
+    <!-- Image button that opens a new tab -->
+    <div class="image-button" onclick="openLink()">
+        <img src="https://pbs.twimg.com/media/D5YMtWjUcAEId6p.jpg" alt="Link Image">
+    </div>
+
+    <script>
+        const colors = [
+            { name: 'Common Green', color: '#4CAF50', probability: '1/2', effect: 'common-effect' },
+            { name: 'Uncommon Blue', color: '#2196F3', probability: '1/4', effect: 'uncommon-effect' },
+            { name: 'Rare Purple', color: '#9C27B0', probability: '1/8', effect: 'rare-effect' },
+            { name: 'Epic Red', color: '#F44336', probability: '1/16', effect: 'epic-effect' },
+            { name: 'Legendary Gold', color: '#FFC107', probability: '1/32', effect: 'legendary-effect' },
+            { name: 'Mythic Cyan', color: '#00BCD4', probability: '1/64', effect: 'mythic-effect' },
+            { name: 'Celestial Purple', color: '#673AB7', probability: '1/128', effect: 'celestial-effect' },
+            { name: 'Divine Pink', color: '#E91E63', probability: '1/256', effect: 'divine-effect' }
+        ];
+
+        let rollingInterval;
+
+        function roll() {
+            const resultDiv = document.getElementById('result');
+            const probabilityDiv = document.getElementById('probability');
+            const body = document.getElementById('body');
+
+            // Reset styles and content
+            resultDiv.textContent = '?';
+            resultDiv.style.color = '#333';
+            probabilityDiv.textContent = '';
+            resultDiv.className = 'result';  // Reset effects
+            body.className = '';  // Reset background class
+
+            // Rolling effect: Cycle through colors randomly
+            let counter = 0;
+            clearInterval(rollingInterval);
+            rollingInterval = setInterval(() => {
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                resultDiv.textContent = randomColor.name;
+                resultDiv.style.color = randomColor.color; // Set correct color
+                resultDiv.style.opacity = 1; // Ensure visibility during rolling
+                counter++;
+            }, 100);
+
+            // Stop rolling and display result
+            setTimeout(() => {
+                clearInterval(rollingInterval);
+
+                // Random color selection based on rarity
+                const randomIndex = Math.floor(Math.random() * 256);
+                let selectedColor;
+
+                if (randomIndex < 128) {
+                    selectedColor = colors[0]; // Common 50% chance
+                } else if (randomIndex < 192) {
+                    selectedColor = colors[1]; // Uncommon 25% chance
+                } else if (randomIndex < 224) {
+                    selectedColor = colors[2]; // Rare 12.5% chance
+                } else if (randomIndex < 240) {
+                    selectedColor = colors[3]; // Epic 6.25% chance
+                } else if (randomIndex < 248) {
+                    selectedColor = colors[4]; // Legendary 3.125% chance
+                } else if (randomIndex < 252) {
+                    selectedColor = colors[5]; // Mythic 1.5625% chance
+                } else if (randomIndex < 254) {
+                    selectedColor = colors[6]; // Celestial 0.78125% chance
+                } else {
+                    selectedColor = colors[7]; // Divine 0.390625% chance
+                }
+
+                // Apply final result and special effect
+                resultDiv.textContent = selectedColor.name;
+                resultDiv.style.color = selectedColor.color; // Set final correct color
+                resultDiv.classList.add(selectedColor.effect);
+                body.classList.add(selectedColor.bgClass);
+
+                // Show probability
+                probabilityDiv.textContent = `Chances: ${selectedColor.probability}`;
+            }, 2000);
+        }
+
+        // Function to change background color based on user's selection
+        function changeBackgroundColor() {
+            const colorPicker = document.getElementById('colorPicker');
+            document.body.style.background = colorPicker.value;
+        }
+
+        // Function to open the link in a new tab
+        function openLink() {
+            window.open('https://www.roblox.com/games/108178845846925/classic-trip-simulator-BETA', '_blank');
+        }
+
+    </script>
+</body>
+</html>
